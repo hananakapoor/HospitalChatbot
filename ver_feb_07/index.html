@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOSPITAL CHATBOT</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://unpkg.com/lucide-css/dist/lucide.css" rel="stylesheet">
+    <style>
+        @keyframes twinkle {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chatbot-icon {
+            animation: twinkle 1.5s infinite ease-in-out;
+        }
+
+        #send-btn, #voice-input-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        #send-btn img, #voice-input-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        #send-btn:hover, #voice-input-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #voice-input-btn {
+            background-color: #0095f6;
+            color: white;
+        }
+
+        #voice-input-btn:hover {
+            background-color: #0077cc;
+        }
+
+        #voice-input-btn.recording {
+            background-color: #ff0000;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Website -->
+    <div class="website-background">
+        <iframe src="Hospital-main/index.html" frameborder="0"></iframe>
+    </div>
+
+    <!-- Chatbot Icon -->
+    <div id="chatbot-icon" class="chatbot-icon">
+        <img src="chatbot-icon.png" alt="Chatbot Icon">
+    </div>
+
+    <!-- Chatbot Window -->
+    <div id="chatbot-window" class="chat-container">
+        <!-- Loading Animation -->
+        <div id="loadingAnimation" class="loading-animation" style="display: none;">
+            <img src="load.gif" alt="Loading...">
+        </div>
+
+        <!-- Recording Animation -->
+        <div id="recordingAnimation" class="recording-animation" style="display: none;">
+            <img src="voice.gif" alt="Recording...">
+        </div>
+
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <i class="lucide-message-circle"></i>
+            <h2>HOSPITAL ASSISTANT</h2>
+            <button id="close-btn"><i class="lucide-x"></i></button>
+        </div>
+
+        <!-- Chat Box -->
+        <div class="chat-box" id="chatBox"></div>
+
+        <!-- Chat Input -->
+        <div class="chat-input">
+            <div class="input-container">
+                <input type="text" id="userInput" placeholder="Type your message...">
+                <button id="send-btn">
+                    <img src="send.png" alt="Send">
+                </button>
+                <button id="voice-input-btn" title="Hold to record">
+                    <img src="voice.png" alt="Voice">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this audio element for playback control -->
+    <audio id="audioPlayer" style="display: none;"></audio>
+
+    <script src="script.js"></script>
+    <script>
+        // Audio control functionality
+        let currentAudio = null;
+        const voiceBtn = document.getElementById('voice-input-btn');
+
+        // Add event listener to stop audio when recording starts
+        voiceBtn.addEventListener('mousedown', () => {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+        });
+                voiceBtn.addEventListener('mouseup', () => {
+            document.getElementById('recordingAnimation').style.display = 'none';
+            voiceBtn.classList.remove('recording');
+
+            // Start sending recorded audio to backend here...
+        });
+        document.getElementById('chatbot-icon').addEventListener('click', () => {
+            const audioUrl = "/ver_feb_07/audio/audio1.webm";
+
+            // Only play audio if it’s not already playing
+            const audioPlayer = document.getElementById('audioPlayer');
+            if (!audioPlayer.paused) {
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+            }
+
+            // Set and play welcome audio
+            audioPlayer.src = audioUrl;
+            audioPlayer.play().catch(err => {
+                console.warn("Autoplay blocked. Will play on user interaction.", err);
+            });
+        });
+
+
+        function playAudio(audioUrl) {
+            // Stop the currently playing audio if any
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            // Play the new audio
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = audioUrl;
+            audioPlayer.play();
+            currentAudio = audioPlayer;
+        }
+
+        // Modify your existing message handling to use playAudio
+         function handleBotResponse(response) {
+            try {
+                const data = JSON.parse(response);
+                const chatBox = document.getElementById('chatBox');
+                chatBox.innerHTML += `<div class="bot-message">${data.message}</div>`;
+
+                // Scroll to bottom
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Play the audio if available
+                if (data.audio) {
+                    playAudio(`/ver_feb_07/audio/${data.audio}`);
+                }
+            } catch (e) {
+                console.error('Error handling response:', e);
+            }
+        }
+
+
+    </script>
+</body>
+</html>
