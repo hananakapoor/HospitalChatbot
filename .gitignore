@@ -1,0 +1,19 @@
+# Ignore env files
+.env
+
+# Ignore build artifacts
+*.o
+*.obj
+*.exe
+*.out
+
+# Ignore OS-specific junk
+.DS_Store
+Thumbs.db
+
+# Ignore IDE configs
+.vscode/
+.idea/
+
+# Ignore audio output
+ver_feb_07/audio/
